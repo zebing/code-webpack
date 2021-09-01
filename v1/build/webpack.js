@@ -190,7 +190,9 @@ class Webpack {
       }
     });
 
-    const code = babel.transformFromAstSync(ast).code;
+    const { code } = babel.transformFromAstSync(ast, null,{
+      presets:["@babel/preset-env"]
+    });
 
     return {
       code,
