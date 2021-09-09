@@ -1,4 +1,5 @@
 const path = require('path');
+const MyPlugin = require('./plugins/MyPlugin');
 
 module.exports = {
   entry: path.resolve('./src/index.js'),
@@ -7,8 +8,11 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        use: ['babel-lodaer']
+        use: ['babel-loader']
       }
     ]
-  }
+  },
+  plugins: [
+    new MyPlugin()
+  ]
 }
