@@ -12,7 +12,7 @@ class HtmlWebpackPlugin {
       const templte = this.getTemplate();
       Object.keys(compilation.assets).forEach((file) => {
         let dir = path.dirname(file);
-        const filename = file.replace(dir, '');
+        const filename = path.basename(file);
         const name = dir === '.' ? 'index.html' : dir + '/index.html';
         const html = templte.replace('</head>', `  <script defer src="./${filename}"></script>\n</head>`);
         compilation.assets[name] = new RawSource(html);
