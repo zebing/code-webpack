@@ -24,6 +24,8 @@ class Compiler {
       compilation: new SyncHook(["compilation", "params"]),
 
       make: new AsyncParallelHook(["compilation"]),
+
+      emit: new AsyncSeriesHook(["compilation"]),
     };
 
     this.context = options.context || process.cwd();
@@ -54,7 +56,9 @@ class Compiler {
       process.nextTick(() => {
         compilation.finish((err) => {
           compilation.seal((err) => {
-            this.emitAssets(compilation);
+            this.hooks.emit.callAsync(compilation, err => {
+              this.emitAssets(compilation);
+            })
           })
         })
       })

@@ -1,5 +1,6 @@
 const path = require('path');
 const MyPlugin = require('./plugins/MyPlugin');
+const HtmlWebpackPlugin = require('./plugins/HtmlWebpackPlugin');
 
 module.exports = {
   entry: {
@@ -52,6 +53,9 @@ module.exports = {
     ]
   },
   plugins: [
-    new MyPlugin()
+    new MyPlugin(),
+    new HtmlWebpackPlugin({
+      template: path.resolve('./index.html')
+    })
   ]
 }

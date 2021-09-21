@@ -43,6 +43,10 @@ class MyPlugin {
         console.log('compilation 调用 finishModules 钩子\n')
       })
     })
+
+    compiler.hooks.emit.tap('MyPlugin', () => {
+      console.log('compiler 调用 emit 钩子\n')
+    })
   }
 }
 
