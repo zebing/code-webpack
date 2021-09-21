@@ -1,4 +1,4 @@
-import helloworld from "./helloworld";
+import helloworld, { test1, test2 } from "./helloworld";
 import component from "./component";
 
 var setup = () => {

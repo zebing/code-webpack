@@ -1,5 +1,6 @@
 const Compiler = require('./Compiler');
 const EntryPlugin = require('./plugins/EntryPlugin');
+const JavascriptModulesPlugin = require('./JavascriptModulesPlugin');
 
 const webpack = function (options) {
   const compiler = new Compiler(options);
@@ -12,6 +13,7 @@ const webpack = function (options) {
   }
 
   new EntryPlugin().apply(compiler);
+  new JavascriptModulesPlugin().apply(compiler);
   compiler.hooks.entryOption.call(compiler.options.context, compiler.options.entry);
   compiler.hooks.afterPlugins.call(compiler);
   

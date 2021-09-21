@@ -30,6 +30,18 @@ class MyPlugin {
       compilation.hooks.addEntry.tap('MyPlugin', () => {
         console.log('compilation 调用 addEntry 钩子\n')
       })
+
+      compilation.hooks.buildModule.tap('MyPlugin', () => {
+        console.log('compilation 调用 buildModule 钩子\n')
+      })
+
+      compilation.hooks.succeedModule.tap('MyPlugin', () => {
+        console.log('compilation 调用 succeedModule 钩子\n')
+      })
+
+      compilation.hooks.finishModules.tap('MyPlugin', () => {
+        console.log('compilation 调用 finishModules 钩子\n')
+      })
     })
   }
 }

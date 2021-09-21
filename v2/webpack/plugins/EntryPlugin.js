@@ -16,7 +16,7 @@ class EntryPlugin {
   }
 
   addEntry(compiler, entry, name) {
-    compiler.hooks.make.tap('EntryPlugin', (compilation, callback) => {
+    compiler.hooks.make.tapAsync('EntryPlugin', (compilation, callback) => {
       const dep = EntryPlugin.createDependency(entry);
 
       compilation.addEntry(dep, name, err => {

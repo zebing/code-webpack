@@ -1,4 +1,5 @@
 const Module = require('./Module');
+const javascriptParser = require('./JavascriptParser');
 
 module.exports = {
   create(options, callback) {
@@ -44,7 +45,7 @@ module.exports = {
       loaders,
       request,
       resource,
-      parser: null
+      parser: javascriptParser
     }
 
     callback(null, createDate)

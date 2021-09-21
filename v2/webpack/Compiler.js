@@ -1,5 +1,7 @@
 const { SyncHook, SyncBailHook, AsyncSeriesHook, AsyncParallelHook } = require('tapable');
 const Compilation = require('./Compilation');
+const fs = require('fs');
+const path = require('path');
 class Compiler {
   constructor(options) {
     this.hooks = {
@@ -45,11 +47,41 @@ class Compiler {
   compile() {
     this.hooks.compile.call();
     const compilation = new Compilation(this);
-    
+
     this.hooks.compilation.call(compilation);
     this.hooks.make.callAsync(compilation, (err) => {
 
+      process.nextTick(() => {
+        compilation.finish((err) => {
+          compilation.seal((err) => {
+            this.emitAssets(compilation);
+          })
+        })
+      })
     })
+  }
+
+  emitAssets(compilation) {
+    const writeFile = (filePath, code) => {
+      const dir = path.dirname(filePath);
+      fs.mkdir(dir, { recursive: true }, (err) => {
+        fs.writeFile(filePath, code, 'utf8', () => {
+    
+          }
+        );
+      })
+    }
+    const outputPath = this.getOutputPath();
+    Object.keys(compilation.assets).forEach((file) => {
+      const filePath = path.resolve(outputPath, file);
+      
+      const code = compilation.assets[file].source();
+      writeFile(filePath, code);
+    })
+  }
+
+  getOutputPath() {
+    return this.options.output.path;
   }
 }
 
