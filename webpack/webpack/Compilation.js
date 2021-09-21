@@ -151,11 +151,14 @@ class Compilation {
         dependencyTemplates: this.dependencyTemplates,
         moduleGraph: this.moduleGraph,
       });
+      const simpleEntry = this.entries.size <= 1;
       manifest.forEach((fileManifest) => {
         const source = fileManifest.render();
         const file = fileManifest.filenameTemplate.file.replace(
           '[name]', 
-          fileManifest.pathOptions.chunk.name
+          simpleEntry 
+            ? fileManifest.pathOptions.chunk.name
+            : fileManifest.pathOptions.chunk.name + '/index'
         );
         this.emitAsset(file, source);
       })
