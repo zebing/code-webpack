@@ -1,9 +1,15 @@
 class moduleGraph {
   constructor() {
     this.dependencyMap = new Map();
+    this.resourceMap = new Map();
+  }
+
+  getDependency (resource) {
+    return this.resourceMap.get(resource);
   }
 
   setResolvedModule (dependency, module) {
+    this.resourceMap.set(module.resource, dependency);
     this.dependencyMap.set(dependency, module);
   }
 

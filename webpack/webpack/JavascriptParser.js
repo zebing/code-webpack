@@ -157,9 +157,11 @@ class JavascriptParser {
       replacement
     );
 
-    this.definitions.add(
-      new Dependency(resource)
-    );
+    const dependency = 
+      this.state.compilation.moduleGraph.getDependency(resource) || 
+      new Dependency(resource);
+
+    this.definitions.add(dependency);
   }
 }
 
