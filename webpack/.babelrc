@@ -1,11 +1,11 @@
 {
   "presets": [
-    "@babel/preset-env"
-    // "@babel/preset-react"
+    "@babel/preset-env",
+    "@babel/preset-react"
   ],
   "plugins": [
     // "@vue/babel-plugin-jsx", // vue jsx和react 不能共存,
     ["@babel/plugin-proposal-decorators", { "decoratorsBeforeExport": true }], // 装饰器
-    // "react-hot-loader/babel"
+    "react-hot-loader/babel"
   ] 
 }

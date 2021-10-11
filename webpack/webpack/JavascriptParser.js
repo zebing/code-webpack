@@ -57,29 +57,51 @@ class JavascriptParser {
   }
 
   blockPreWalkExportNamedDeclaration(statement) {
-    this.replaceSource.replace(
-      statement.start,
-      statement.declaration.start - 1,
-      ''
-    );
-    let insertion = '';
-    statement.declaration.declarations.forEach((node) => {
-      const name = this.blockPreWalkExportNamedDeclarationName(node);
-      insertion = `
-        ${insertion}
-        __webpack_exports__.${name} = ${name};
-      `
-    });
-    this.replaceSource.insert(
-      statement.declaration.end,
-      insertion
-    );
+    if (statement.declaration) {
+      this.replaceSource.replace(
+        statement.start,
+        statement.declaration.start - 1,
+        ''
+      );
+      let insertion = '';
+      statement.declaration.declarations.forEach((node) => {
+        const name = this.blockPreWalkExportNamedDeclarationName(node);
+        insertion = `
+          ${insertion}
+          __webpack_exports__.${name} = ${name};
+        `
+      });
+      this.replaceSource.insert(
+        statement.end,
+        insertion
+      );
+      return;
+    }
+
+    if (statement.specifiers.length) {
+      const specifier = statement.specifiers[0];
+      this.replaceSource.replace(
+        statement.start,
+        specifier.end,
+        ''
+      );
+      const name = this.blockPreWalkExportNamedDeclarationName(specifier);
+      const insertion = `
+        __webpack_exports__.default = ${name};
+      `;
+      this.replaceSource.insert(
+        specifier.end,
+        insertion
+      );
+    }
   }
 
   blockPreWalkExportNamedDeclarationName(node) {
     switch(node.type) {
       case "VariableDeclarator":
         return node.id.name;
+      case "ExportSpecifier":
+        return node.local.name;
       default:
         return node.id.name;
     }

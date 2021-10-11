@@ -3,6 +3,7 @@ import './style.scss';
 import { Link  } from "react-router-dom";
 const styles = {}
 
+export const test = 'test';
 export default class Tab extends React.Component {
   constructor (props) {
     super(props);

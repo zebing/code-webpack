@@ -4,8 +4,9 @@ const HtmlWebpackPlugin = require('./plugins/HtmlWebpackPlugin');
 
 module.exports = {
   entry: {
-    index: path.resolve('./src/index.js'),
-    test: path.resolve('./src/test/index.js'),
+    // index: path.resolve('./src/index.js'),
+    // test: path.resolve('./src/test/index.js'),
+    react: path.resolve('./src/react/index.js'),
   },
   output: {
     path: path.resolve('./dist'),

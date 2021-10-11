@@ -22,8 +22,10 @@ class moduleGraph {
 
       while (dep) {
         const module = this.getResolvedModule(dep);
-        allModules.add(module);
-        subDependencies = [...subDependencies, ...module.dependencies];
+        if (module) {
+          allModules.add(module);
+          subDependencies = [...subDependencies, ...module.dependencies];
+        }
         dep = dependencies.shift();
       }
 

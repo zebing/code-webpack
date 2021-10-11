@@ -59,6 +59,11 @@ class Module {
 
   doBuild (options, callback) {
     const processResult = (err, originResult) => {
+      if (!originResult.result) {
+        this._source = new RawSource();
+        callback();
+        return;
+      }
       const result = originResult.result[0];
       
       this._source = new RawSource(
