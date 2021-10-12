@@ -1,4 +1,1 @@
-const text = 'text'
-export default () => {
-  return 'hello' + text
-}
+export default 'text'

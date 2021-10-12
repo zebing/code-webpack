@@ -5,7 +5,7 @@ const helloWorldStr = helloWorld();
 function component() {
   const element = document.createElement("div");
 
-  element.innerHTML = helloWorldStr;
+  element.innerText = helloWorldStr;
 
   return element;
 }
