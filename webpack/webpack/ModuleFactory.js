@@ -10,6 +10,7 @@ module.exports = {
       compilerOptions,
 			context,
 			request: dep.request,
+			rawRequest: dep.rawRequest,
 			dependencies,
 		};
 
@@ -29,6 +30,7 @@ module.exports = {
 			context,
 			request,
 			dependencies,
+      rawRequest,
     } = resolveData;
     const resource = request;
     const loaders = this.getLoader(
@@ -45,7 +47,8 @@ module.exports = {
       loaders,
       request,
       resource,
-      parser: javascriptParser
+      parser: javascriptParser,
+      name: rawRequest.replace(process.cwd(), '.')
     }
 
     callback(null, createDate)
@@ -55,6 +58,9 @@ module.exports = {
     const dep = dependencies[0];
     const resource = dep.request;
     let loaders = [];
+    if (dep.pitchLoader) {
+      return dep.pitchLoader;
+    }
 
     rules.forEach((item) => {
       if (item.test.test(resource)) {

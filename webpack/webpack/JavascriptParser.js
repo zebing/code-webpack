@@ -116,12 +116,48 @@ class JavascriptParser {
   }
 
   blockPreWalkImportDeclaration (statement) {
-    let resource;
-    try {
-      resource = require.resolve(statement.source.value)
-    } catch(err) {}
+    let isEffectDependency = false;
+    let resource = statement.source.value;
+    let loaders = undefined;
 
-    if (!resource) {
+    // pitching 
+    const pitchReg = /^(!!|-!|!)/gi;
+    if (pitchReg.test(resource)) {
+      // 处理style loader js文件路径
+      if (/^!.+?\.js$/gi.test(resource)) {
+        resource = resource.replace('!', '');
+
+      } else {
+        isEffectDependency = true;
+        const rules = resource.replace(pitchReg, '').split('!');
+        resource = path.resolve(
+          path.dirname(this.state.module.resource),
+          rules.pop()
+        );
+
+        loaders = rules.map((value) => {
+          const url = value.split('??');
+          const loader = require.resolve(
+            path.resolve(
+              path.dirname(this.state.module.resource),
+              url[0]
+            )
+          );
+
+          return {
+            ident: url[1],
+            loader,
+            options: url[1] && {
+              modules: true,
+            }
+          }
+        })
+      }
+    }
+
+    try {
+      resource = require.resolve(resource)
+    } catch(err) {
       const dirname = path.dirname(this.state.module.resource)
       resource = require.resolve(
         path.resolve(
@@ -157,9 +193,18 @@ class JavascriptParser {
       replacement
     );
 
-    const dependency = 
-      this.state.compilation.moduleGraph.getDependency(resource) || 
-      new Dependency(resource);
+    let dependency;
+    if (isEffectDependency) {
+      dependency = new Dependency({ 
+        request: this.state.current.resource,
+        rawRequest: statement.source.value,
+        pitchLoader: loaders
+      });
+    } else {
+      dependency = 
+        this.state.compilation.moduleGraph.getDependency(resource) || 
+        new Dependency({ request: resource });
+    }
 
     this.definitions.add(dependency);
   }

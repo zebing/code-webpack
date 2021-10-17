@@ -23,6 +23,7 @@ class Module {
     resource,
     loaders,
     parser,
+    name,
     binary = false
   }) {
     this.context = context;
@@ -31,7 +32,7 @@ class Module {
     this.parser = parser;
     this.loaders = loaders;
     this.binary = binary;
-    this.name = resource.replace(process.cwd(), '.');
+    this.name = name;
     
     // Info from Build
     this._source = null;
@@ -60,7 +61,7 @@ class Module {
   doBuild (options, callback) {
     const processResult = (err, originResult) => {
       if (!originResult.result) {
-        this._source = new RawSource();
+        this._source = new RawSource('// code');
         callback();
         return;
       }
@@ -89,6 +90,12 @@ class Module {
     compiler
   }) {
     return {
+      getOptions() {
+        return {}
+      },
+      emitError () {
+
+      },
       _compilation: compilation,
       _compiler: compiler,
       _module: this,

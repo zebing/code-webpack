@@ -1,7 +1,9 @@
 class Dependency {
-  constructor(request) {
+  constructor({ request, userRequest, rawRequest, pitchLoader }) {
     this.request = request;
-		this.userRequest = request;
+		this.userRequest = userRequest || request;
+		this.rawRequest = rawRequest || request;
+    this.pitchLoader = pitchLoader;
     this.child = null;
   }
 

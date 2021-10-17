@@ -2,7 +2,7 @@ const Dependency = require('./Dependency');
 
 class EntryDependency extends Dependency{
   constructor(entry) {
-    super(entry);
+    super({ request: entry });
   }
 
   get type() {
