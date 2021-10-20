@@ -30,6 +30,7 @@ class Compiler {
 
     this.context = options.context || process.cwd();
     this.options = options;
+    this.options.context = options.context || process.cwd();
 
     if (Object.prototype.toString.call(options.entry) === "[object String]") {
       const entry = {}

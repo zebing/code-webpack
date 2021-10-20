@@ -145,11 +145,9 @@ class JavascriptParser {
           );
 
           return {
-            ident: url[1],
+            ident: undefined,
             loader,
-            options: url[1] && {
-              modules: true,
-            }
+            options: undefined
           }
         })
       }

@@ -89,6 +89,8 @@ class Module {
     compilation,
     compiler
   }) {
+    const options = compiler.options;
+
     return {
       getOptions() {
         return {}
@@ -96,6 +98,10 @@ class Module {
       emitError () {
 
       },
+      getResolve () {
+
+      },
+      rootContext: options.context,
       _compilation: compilation,
       _compiler: compiler,
       _module: this,

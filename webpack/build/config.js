@@ -27,18 +27,20 @@ module.exports = {
         use: [
           'style-loader', 
           {
+            ident: "clonedRuleSet-3.use[1]",
             loader: "css-loader",
             options: { 
                   modules: true,
                   //other options
             }
           }, 
-          'postcss-loader'
+          // 'postcss-loader'
         ]
       },
       {
         test: /\.scss$/,
-        use: ['style-loader', 
+        use: [
+          'style-loader', 
           {
             ident: "clonedRuleSet-3.use[1]",
             loader: "css-loader",
@@ -47,7 +49,7 @@ module.exports = {
                   //other options
             }
           }, 
-          'postcss-loader', 
+          // 'postcss-loader', 
           'sass-loader'
         ]
       },
