@@ -90,6 +90,7 @@ class JavascriptModulesPlugin {
           }
       
           var module = __webpack_module_cache__[moduleId] = {
+            id: moduleId,
             exports: {}
           };
       
@@ -112,7 +113,7 @@ class JavascriptModulesPlugin {
     const moduleSource = new ConcatSource(module._source);
     const factorySource = new ConcatSource();
     const args = [
-      '__unused_webpack_',
+      'module',
       '__webpack_exports__',
       '__webpack_require__'
     ];
