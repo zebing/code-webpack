@@ -27,7 +27,7 @@ module.exports = {
         use: [
           'style-loader', 
           {
-            ident: "clonedRuleSet-3.use[1]",
+            // ident: "clonedRuleSet-3.use[1]",
             loader: "css-loader",
             options: { 
                   modules: true,
@@ -42,7 +42,6 @@ module.exports = {
         use: [
           'style-loader', 
           {
-            ident: "clonedRuleSet-3.use[1]",
             loader: "css-loader",
             options: { 
                   modules: true,

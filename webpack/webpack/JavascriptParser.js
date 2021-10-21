@@ -238,7 +238,7 @@ class JavascriptParser {
           );
 
           return {
-            ident: undefined,
+            ident: url[1],
             loader,
             options: undefined
           }

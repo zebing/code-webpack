@@ -1,5 +1,6 @@
 const Module = require('./Module');
 const javascriptParser = require('./JavascriptParser');
+let ruleSetId = 1;
 
 module.exports = {
   create(options, callback) {
@@ -64,7 +65,7 @@ module.exports = {
 
     rules.forEach((item) => {
       if (item.test.test(resource)) {
-        item.use.forEach((item) => {
+        item.use.forEach((item, index) => {
           if (typeof item === 'string') {
             loaders.push({
               loader: require.resolve(item),
@@ -72,6 +73,9 @@ module.exports = {
             })
           } else {
             item.loader = require.resolve(item.loader)
+            if (!item.ident) {
+              item.ident = `clonedRuleSet-${ruleSetId++}.use[${index}]`
+            }
             loaders.push(item)
           }
         });
