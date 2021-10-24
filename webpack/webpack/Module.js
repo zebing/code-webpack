@@ -95,12 +95,19 @@ class Module {
       getOptions(options) {
         return options
       },
-      emitError () {
+      emitError (error) {
 
       },
-      getResolve () {
+      resolve(context, request, callback) {
+				
+			},
+      getResolve (options) {
 
       },
+      addBuildDependency (dep) {
+
+      },
+      fs,
       rootContext: options.context,
       _compilation: compilation,
       _compiler: compiler,

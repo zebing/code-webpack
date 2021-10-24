@@ -48,7 +48,7 @@ module.exports = {
                   //other options
             }
           }, 
-          // 'postcss-loader', 
+          'postcss-loader', 
           'sass-loader'
         ]
       },
