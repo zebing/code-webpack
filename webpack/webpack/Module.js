@@ -92,8 +92,8 @@ class Module {
     const options = compiler.options;
 
     return {
-      getOptions() {
-        return {}
+      getOptions(options) {
+        return options
       },
       emitError () {
 

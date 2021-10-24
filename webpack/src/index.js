@@ -1,6 +1,6 @@
 import helloworld, { test1, test2 } from "./helloworld";
 import component from "./component";
-import styles from './styles.module.css';
+import styles from './styles.module.scss';
 console.log(styles)
 
 var setup = () => {
