@@ -218,7 +218,10 @@ class JavascriptParser {
     if (pitchReg.test(resource)) {
       // 处理style loader js文件路径
       if (/^!.+?\.js$/gi.test(resource)) {
-        resource = resource.replace('!', '');
+        resource = path.resolve(
+          path.dirname(this.state.module.resource),
+          resource.replace('!', '')
+        )
 
       } else {
         isEffectDependency = true;
@@ -286,20 +289,18 @@ class JavascriptParser {
       replacement
     );
 
-    let dependency;
     if (isEffectDependency) {
-      dependency = new Dependency({ 
+      this.definitions.add(new Dependency({ 
         request: this.state.current.resource,
         rawRequest: statement.source.value,
         pitchLoader: loaders
-      });
-    } else {
-      dependency = 
-        this.state.compilation.moduleGraph.getDependency(resource) || 
-        new Dependency({ request: resource });
-    }
+      }));
 
-    this.definitions.add(dependency);
+    } else {
+      if (!this.state.compilation.moduleGraph.getDependency(resource)) {
+        this.definitions.add(new Dependency({ request: resource }));
+      }
+    }
   }
 }
 

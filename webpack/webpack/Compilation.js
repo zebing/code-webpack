@@ -67,19 +67,23 @@ class Compilation {
 
   processModuleDependencies(module, callback) {
     const leng = module.dependencies.length;
+    let taskIndex = 0;
     if (!leng) {
       return callback(null);
     }
 
-    module.dependencies.forEach((dep, index) => {
+    module.dependencies.forEach((dep) => {
       this.handleModuleCreation({
         dependencies: [dep]
       }, (err) => {
-        if (index === leng - 1) {
+        taskIndex++;
+        
+        if (taskIndex === leng) {
           callback();
         }
       });
-    })
+    });
+    
   }
 
   // 添加模块
