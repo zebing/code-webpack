@@ -37,6 +37,12 @@ class JavascriptParser {
     const that = this;
 
     traverse(ast, {
+
+      // require
+      CallExpression (p) {
+        that.walkCallExpressionDeclaration(p.node);
+      },
+
       // import test, {test1} from './test'
       ImportDeclaration(p) {
         that.blockPreWalkImportDeclaration(p.node);
@@ -61,6 +67,16 @@ class JavascriptParser {
         that.walkAssignmentExpression(p.node);
       }
     });
+  }
+
+  walkCallExpressionDeclaration (statement) {
+    if (statement.callee.name === 'require') {
+      this.replaceSource.replace(
+        statement.callee.start,
+        statement.callee.end - 1,
+        '__webpack_require__'
+      );
+    }
   }
 
   blockPreWalkExportAllDeclaration(statement) {
