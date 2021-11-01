@@ -1,4 +1,5 @@
 const { parse } = require('@babel/core');
+const traverse = require('@babel/traverse').default;
 const path = require('path');
 const { ReplaceSource } = require('webpack-sources');
 const Dependency = require('./Dependency');
@@ -20,7 +21,7 @@ class JavascriptParser {
     }
 
     const ast = typeof source === 'object' ? source : parse(source);
-    this.blockPreWalkStatements(ast.program.body);
+    this.blockPreWalkStatements(ast);
     this.definitions.forEach((dep) => {
       state.module.dependencies.push(dep);
     });
@@ -32,43 +33,34 @@ class JavascriptParser {
     return state;
   }
 
-  blockPreWalkStatements(statements) {
-    const source = new ReplaceSource();
-    const len = statements.length;
-    for (let index = 0; index < len; index++) {
-      this.blockPreWalkStatement(statements[index]);
-    }
-  }
+  blockPreWalkStatements(ast) {
+    const that = this;
 
-  blockPreWalkStatement(statement) {
-    switch(statement.type) {
+    traverse(ast, {
       // import test, {test1} from './test'
-      case "ImportDeclaration":
-        this.blockPreWalkImportDeclaration(statement);
-        break;
-      
+      ImportDeclaration(p) {
+        that.blockPreWalkImportDeclaration(p.node);
+      },
+
       // export default ...
-      case "ExportDefaultDeclaration":
-        this.blockPreWalkExportDefaultDeclaration(statement);
-        break;
-      
+      ExportDefaultDeclaration (p) {
+        that.blockPreWalkExportDefaultDeclaration(p.node);
+      },
+
       // export const name = ''
-      case "ExportNamedDeclaration":
-        this.blockPreWalkExportNamedDeclaration(statement);
-        break;
+      ExportNamedDeclaration (p) {
+        that.blockPreWalkExportNamedDeclaration(p.node);
+      },
 
       // export * from '...' 
-      case "ExportAllDeclaration":
-				this.blockPreWalkExportAllDeclaration(statement);
-				break;
+      ExportAllDeclaration (p) {
+        that.blockPreWalkExportAllDeclaration(p.node);
+      },
 
-      // left = right; 主要是module.exports = ...
-      case "ExpressionStatement":
-        this.walkExpressionStatement(statement);
-        break;
-      default:
-
-    }
+      AssignmentExpression (p) {
+        that.walkAssignmentExpression(p.node);
+      }
+    });
   }
 
   blockPreWalkExportAllDeclaration(statement) {
@@ -92,23 +84,6 @@ class JavascriptParser {
     );
 	}
 
-  walkExpressionStatement(statement) {
-    this.walkExpressionStatement(statement);
-  }
-
-  walkExpressionStatement(statement) {
-		this.walkExpression(statement.expression);
-	}
-
-  walkExpression(expression) {
-		switch (expression.type) {
-			case "AssignmentExpression":
-				this.walkAssignmentExpression(expression);
-				break;
-      default:
-    }
-  }
-
   walkAssignmentExpression(expression) {
     // module.exports 表达式转换
     if (expression.left.type === "MemberExpression") {
@@ -116,7 +91,7 @@ class JavascriptParser {
       let property = expression.left.property;
 
       // module.exports.name.name...的情况
-      while (object.type !== 'Identifier') {
+      while (object.type !== 'Identifier' && object.object) {
         object = object.object;
         property = object.property;
       }
