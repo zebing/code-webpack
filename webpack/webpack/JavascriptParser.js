@@ -76,6 +76,21 @@ class JavascriptParser {
         statement.callee.end - 1,
         '__webpack_require__'
       );
+
+      let resource = statement.arguments[0].value;
+
+      try {
+        resource = require.resolve(resource)
+      } catch(err) {
+        const dirname = path.dirname(this.state.module.resource);
+        resource = require.resolve(
+          path.resolve(dirname, resource)
+        );
+      }
+
+      if (!this.state.compilation.moduleGraph.getDependency(resource)) {
+        this.definitions.add(new Dependency({ request: resource }));
+      }
     }
   }
 
