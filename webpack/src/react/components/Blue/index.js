@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './style.scss';
+import styles from './styles.module.scss';
 
 export default class Red extends React.Component {
   constructor(props) {

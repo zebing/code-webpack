@@ -3,6 +3,13 @@ const traverse = require('@babel/traverse').default;
 const path = require('path');
 const { ReplaceSource } = require('webpack-sources');
 const Dependency = require('./Dependency');
+const { 
+  getIdentifiers, 
+  evaluteJavascript,
+  requireResolve,
+  isGlobalName,
+  loaderPitchResolve,
+} = require('./shared');
 
 let moduleId = 1;
 
@@ -63,33 +70,45 @@ class JavascriptParser {
         that.blockPreWalkExportAllDeclaration(p.node);
       },
 
-      AssignmentExpression (p) {
-        that.walkAssignmentExpression(p.node);
+      MemberExpression (p) {
+        that.walkMemberExpression(p.node);
       }
     });
   }
 
   walkCallExpressionDeclaration (statement) {
     if (statement.callee.name === 'require') {
-      this.replaceSource.replace(
-        statement.callee.start,
-        statement.callee.end - 1,
-        '__webpack_require__'
-      );
-
       let resource = statement.arguments[0].value;
-
-      try {
-        resource = require.resolve(resource)
-      } catch(err) {
-        const dirname = path.dirname(this.state.module.resource);
-        resource = require.resolve(
-          path.resolve(dirname, resource)
+      const globalName = isGlobalName(resource, this.state.options.compiler.options.global);
+      
+      if (globalName) {
+        this.replaceSource.replace(
+          statement.start,
+          statement.end,
+          globalName
         );
-      }
 
-      if (!this.state.compilation.moduleGraph.getDependency(resource)) {
-        this.definitions.add(new Dependency({ request: resource }));
+      } else {
+        this.replaceSource.replace(
+          statement.callee.start,
+          statement.callee.end - 1,
+          '__webpack_require__'
+        );
+  
+        resource = requireResolve(
+          resource, 
+          path.dirname(this.state.module.resource)
+        );
+  
+        this.replaceSource.replace(
+          statement.arguments[0].start,
+          statement.arguments[0].end - 1,
+          `'${resource.replace(process.cwd(), '.')}'`
+        );
+
+        if (!this.state.compilation.moduleGraph.getDependency(resource)) {
+          this.definitions.add(new Dependency({ request: resource }));
+        }
       }
     }
   }
@@ -115,43 +134,34 @@ class JavascriptParser {
     );
 	}
 
-  walkAssignmentExpression(expression) {
-    // module.exports 表达式转换
-    if (expression.left.type === "MemberExpression") {
-      let object = expression.left.object;
-      let property = expression.left.property;
+  walkMemberExpression(expression) {
+    const identifiersList = getIdentifiers(expression);
 
-      // module.exports.name.name...的情况
-      while (object.type !== 'Identifier' && object.object) {
-        object = object.object;
-        property = object.property;
-      }
+    // 判断是否是module.exports...
+    if (identifiersList[0] === 'module' && identifiersList[1] === 'exports') {
+      let nameStr = identifiersList.slice(2).join('.') || 'default';
 
-      // 判断是否是module.exports...
-      if (object.name === 'module' && property.name === 'exports') {
-        let object = expression.left.object;
-        let property = expression.left.property;
-        let nameStr = 'default'; // module.exports = ... 的情况
+      const insertion = `__webpack_exports__.${nameStr} `
 
-        // module.exports.name...的情况
-        if (property.name !== 'exports') {
-          nameStr = property.name;
-          object = object.object;
+      this.replaceSource.replace(
+        expression.start,
+        expression.end,
+        insertion
+      );
 
-          while(object.property.name !== 'exports') {
-            nameStr = `${object.property.name}.${nameStr}`
-            object = object.object;
-          }
-        }
-
-        const insertion = `__webpack_exports__.${nameStr} `
-
-        this.replaceSource.replace(
-          expression.left.start,
-          expression.left.end,
-          insertion
-        );
-      }
+      // process.env.key...
+    } else if (
+      identifiersList[0] === 'process' && 
+      identifiersList[1] === 'env' &&
+      identifiersList.length > 2
+    ) {
+      const value = evaluteJavascript(identifiersList.join('.'));
+      this.replaceSource.replace(
+        expression.start,
+        expression.end,
+        `${value}`
+      );
+      console.log(value)
     }
   }
 
@@ -181,7 +191,7 @@ class JavascriptParser {
       const specifier = statement.specifiers[0];
       this.replaceSource.replace(
         statement.start,
-        specifier.end,
+        statement.end,
         ''
       );
       const name = this.blockPreWalkExportNamedDeclarationName(specifier);
@@ -215,62 +225,28 @@ class JavascriptParser {
   }
 
   blockPreWalkImportDeclaration (statement) {
-    let isEffectDependency = false;
     let resource = statement.source.value;
-    let loaders = undefined;
 
-    // pitching 
-    const pitchReg = /^(!!|-!|!)/gi;
-    if (pitchReg.test(resource)) {
-      // 处理style loader js文件路径
-      if (/^!.+?\.js$/gi.test(resource)) {
-        resource = path.resolve(
-          path.dirname(this.state.module.resource),
-          resource.replace('!', '')
-        )
-
-      } else {
-        isEffectDependency = true;
-        const rules = resource.replace(pitchReg, '').split('!');
-        resource = path.resolve(
-          path.dirname(this.state.module.resource),
-          rules.pop()
-        );
-
-        loaders = rules.map((value) => {
-          const url = value.split('??');
-          const loader = require.resolve(
-            path.resolve(
-              path.dirname(this.state.module.resource),
-              url[0]
-            )
-          );
-
-          return {
-            ident: url[1],
-            loader,
-            options: undefined
-          }
-        })
-      }
-    }
-
-    try {
-      resource = require.resolve(resource)
-    } catch(err) {
-      const dirname = path.dirname(this.state.module.resource)
-      resource = require.resolve(
-        path.resolve(
-          dirname,
-          statement.source.value
-        )
+    const globalName = isGlobalName(resource, this.state.options.compiler.options.global);
+    
+    if (globalName) {
+      this.replaceSource.replace(
+        statement.start,
+        statement.end,
+        ''
       );
+      return;
     }
+
+    const result = loaderPitchResolve(
+      resource, 
+      path.dirname(this.state.module.resource)
+    );
 
     const moduleName = `WEBPACK_MODULE_REFERENCE_${moduleId++}`;
-    const modulePath = isEffectDependency 
-      ? statement.source.value
-      : resource.replace(process.cwd(), '.')
+    const modulePath = result.isEffectDependency 
+      ? resource
+      : result.resource.replace(process.cwd(), '.')
     let replacement = `
       var ${moduleName} = __webpack_require__('${modulePath}');
     `;
@@ -295,16 +271,16 @@ class JavascriptParser {
       replacement
     );
 
-    if (isEffectDependency) {
+    if (result.isEffectDependency) {
       this.definitions.add(new Dependency({ 
         request: this.state.current.resource,
-        rawRequest: statement.source.value,
-        pitchLoader: loaders
+        rawRequest: resource,
+        pitchLoader: result.loaders
       }));
 
     } else {
-      if (!this.state.compilation.moduleGraph.getDependency(resource)) {
-        this.definitions.add(new Dependency({ request: resource }));
+      if (!this.state.compilation.moduleGraph.getDependency(result.resource)) {
+        this.definitions.add(new Dependency({ request: result.resource }));
       }
     }
   }

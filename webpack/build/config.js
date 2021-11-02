@@ -13,6 +13,10 @@ module.exports = {
     path: path.resolve('./dist'),
     file: '[name].js'
   },
+  global: {
+    react: 'React',
+    'react-dom': 'ReactDOM',
+  },
   module: {
     rules: [
       {
