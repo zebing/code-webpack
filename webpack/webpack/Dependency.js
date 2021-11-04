@@ -10,6 +10,10 @@ class Dependency {
   get type() {
     return 'unknown';
   }
+
+  get Identifier() {
+    return this.rawRequest;
+  }
 }
 
 module.exports = Dependency;

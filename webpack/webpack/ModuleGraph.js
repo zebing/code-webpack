@@ -1,20 +1,24 @@
 class moduleGraph {
   constructor() {
+    // { key => identifier, value => dependency }
     this.dependencyMap = new Map();
-    this.resourceMap = new Map();
-  }
 
-  getDependency (resource) {
-    return this.resourceMap.get(resource);
+    // { key => dependency, value => module }
+    this.moduleMap = new Map();
   }
 
   setResolvedModule (dependency, module) {
-    this.resourceMap.set(module.resource, dependency);
-    this.dependencyMap.set(dependency, module);
+    const identifier = dependency.Identifier;
+    this.dependencyMap.set(identifier, dependency);
+    this.moduleMap.set(dependency, module);
   }
 
   getResolvedModule(dependency) {
-    return this.dependencyMap.get(dependency);
+    return this.moduleMap.get(dependency);
+  }
+
+  getResolvedDependency(identifier) {
+    return this.dependencyMap.get(identifier);
   }
 
   getAllmodule(entryModule) {
@@ -28,7 +32,7 @@ class moduleGraph {
 
       while (dep) {
         const module = this.getResolvedModule(dep);
-        if (module) {
+        if (module && !allModules.has(module)) {
           allModules.add(module);
           subDependencies = [...subDependencies, ...module.dependencies];
         }

@@ -4,15 +4,14 @@ let ruleSetId = 1;
 
 module.exports = {
   create(options, callback) {
-    const { dependencies, context, compilerOptions } = options;
-    const dep = dependencies[0];
+    const { dependency, context, compilerOptions } = options;
 
     const resolveData = {
       compilerOptions,
 			context,
-			request: dep.request,
-			rawRequest: dep.rawRequest,
-			dependencies,
+			request: dependency.request,
+			rawRequest: dependency.rawRequest,
+			dependency,
 		};
 
     this.resolve(resolveData, (err, result) => {
@@ -30,13 +29,13 @@ module.exports = {
       compilerOptions,
 			context,
 			request,
-			dependencies,
+			dependency,
       rawRequest,
     } = resolveData;
     const resource = request;
     const loaders = this.getLoader(
       compilerOptions.module && compilerOptions.module.rules,
-      dependencies
+      dependency
     );
 
     loaders.forEach((item) => {
@@ -55,12 +54,11 @@ module.exports = {
     callback(null, createDate)
   },
 
-  getLoader(rules = [], dependencies) {
-    const dep = dependencies[0];
-    const resource = dep.request;
+  getLoader(rules = [], dependency) {
+    const resource = dependency.request;
     let loaders = [];
-    if (dep.pitchLoader) {
-      return dep.pitchLoader;
+    if (dependency.pitchLoader) {
+      return dependency.pitchLoader;
     }
 
     rules.forEach((item) => {

@@ -44,25 +44,7 @@ class Compilation {
   handleModuleCreation ({ dependencies }, callback) {
     const dependency = dependencies[0];
 
-    // 创建module
-    factory.create({
-      dependencies,
-      compilerOptions: this.compiler.options,
-      context: this.compiler.context
-    }, (err, newModule) => {
-      // 添加module
-      this.addModule(newModule);
-      this.moduleGraph.setResolvedModule(dependency, newModule);
-      
-      // build module
-      this.buildModule(newModule, (err) => {
-        
-        // 循环遍历依赖
-        this.processModuleDependencies(newModule, (err) => {
-          callback(null);
-        })
-      })
-    })
+    this.createModule(dependency, callback);
   }
 
   processModuleDependencies(module, callback) {
@@ -84,6 +66,38 @@ class Compilation {
       });
     });
     
+  }
+
+  createModule (dependency, callback) {
+    const identifier = dependency.Identifier;
+    const oldDependency = this.moduleGraph.getResolvedDependency(identifier);
+    if (oldDependency) {
+      const oldModule = this.moduleGraph.getResolvedModule(oldDependency);
+      this.moduleGraph.setResolvedModule(dependency, oldModule);
+      callback(null);
+
+    } else {
+
+      // 创建module
+      factory.create({
+        dependency,
+        compilerOptions: this.compiler.options,
+        context: this.compiler.context
+      }, (err, newModule) => {
+        // 添加module
+        this.addModule(newModule);
+        this.moduleGraph.setResolvedModule(dependency, newModule);
+        
+        // build module
+        this.buildModule(newModule, (err) => {
+          
+          // 循环遍历依赖
+          this.processModuleDependencies(newModule, (err) => {
+            callback(null);
+          })
+        })
+      })
+    }
   }
 
   // 添加模块

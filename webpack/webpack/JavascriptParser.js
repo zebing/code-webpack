@@ -106,9 +106,7 @@ class JavascriptParser {
           `'${resource.replace(process.cwd(), '.')}'`
         );
 
-        if (!this.state.compilation.moduleGraph.getDependency(resource)) {
-          this.definitions.add(new Dependency({ request: resource }));
-        }
+        this.definitions.add(new Dependency({ request: resource }));
       }
     }
   }
@@ -161,7 +159,6 @@ class JavascriptParser {
         expression.end,
         `${value}`
       );
-      console.log(value)
     }
   }
 
@@ -271,18 +268,17 @@ class JavascriptParser {
       replacement
     );
 
+    let options = { request: result.resource };
+
     if (result.isEffectDependency) {
-      this.definitions.add(new Dependency({ 
+      options = { 
         request: this.state.current.resource,
         rawRequest: resource,
         pitchLoader: result.loaders
-      }));
-
-    } else {
-      if (!this.state.compilation.moduleGraph.getDependency(result.resource)) {
-        this.definitions.add(new Dependency({ request: result.resource }));
-      }
-    }
+      };
+    } 
+    
+    this.definitions.add(new Dependency(options));
   }
 }
 
