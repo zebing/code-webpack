@@ -1,5 +1,5 @@
-import helloworld from "./helloworld";
-import component from "./component";
+import helloworld from "./helloworld.js";
+import component from "./component.js";
 
 var setup = () => {
   const wrap = document.createElement('div');
