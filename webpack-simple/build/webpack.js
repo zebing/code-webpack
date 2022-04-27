@@ -11,11 +11,11 @@ class Webpack {
     this.readFile(this.config.entry);
   }
 
-  assets(results = []) {
+  assets(modules = []) {
 
-    const modules = [];
-    results.map((module) => {
-      modules.push(`
+    const stats = [];
+    modules.map((module) => {
+      stats.push(`
         '${module.filePath}': function (module, exports, require) {
           ${module.code}
         }
@@ -24,7 +24,7 @@ class Webpack {
 
     const code = `
       const modules = {
-        ${modules.join()}
+        ${stats.join()}
       }
 
       var __webpack_module_cache__ = {};
@@ -73,13 +73,13 @@ class Webpack {
 
   readFile (filePath) {
     const result = this.parseFile(filePath);
-    const results = [result];
+    const modules = [result];
 
     result.dependences.forEach((value) => {
       const re = this.parseFile(value);
-      results.push(re);
+      modules.push(re);
     });
-    this.assets(results);
+    this.assets(modules);
   }
 
   parseFile (filePath) {
